@@ -1,0 +1,91 @@
+import tkinter as tk
+import random
+
+# --- List langkah tata cara bersih-bersih restroom ---
+langkah_hotel = [
+    "Persiapan APD & alat", 
+    "Periksa kondisi awal", 
+    "Membersihkan Toilet", 
+    "Membersihkan Shower/Bathtub", 
+    "Membersihkan Wastafel & Vanity", 
+    "Membersihkan Lantai", 
+    "Perlengkapan Tambahan", 
+    "Pemeriksaan Akhir"
+]
+
+# Tambahkan slot kosong
+posisi = langkah_hotel[:] + [""]  # "" sebagai slot kosong
+
+def acak_tombol():
+    """Acak posisi tombol"""
+    global posisi
+    posisi = langkah_hotel[:] + [""]
+    random.shuffle(posisi)
+    update_tombol()
+    label_status.config(text="")
+
+def update_tombol():
+    """Update teks tombol sesuai posisi"""
+    for i in range(3):
+        for j in range(3):
+            idx = i*3 + j
+            nilai = posisi[idx]
+            tombol = tombol_grid[i][j]
+            if nilai == "":
+                tombol.config(text="", bg="#f0f0f0")  # slot kosong
+            else:
+                tombol.config(text=nilai, bg="#c1e1c1", wraplength=100, justify="center", font=("Comic Sans MS", 10))
+
+def geser(i,j):
+    """Geser tombol jika ada slot kosong di samping"""
+    idx = i*3 + j
+    idx_kosong = posisi.index("")
+    i0, j0 = divmod(idx_kosong, 3)
+
+    if (abs(i-i0)==1 and j==j0) or (abs(j-j0)==1 and i==i0):
+        posisi[idx_kosong], posisi[idx] = posisi[idx], posisi[idx_kosong]
+        update_tombol()
+        cek_menang()
+
+def cek_menang():
+    """Cek apakah puzzle sudah urut"""
+    if posisi[:-1] == langkah_hotel:
+        label_status.config(text="🎉 Selamat! Urutan benar! 🎉", fg="#2e8b57")
+
+# --- GUI ---
+root = tk.Tk()
+root.title("Puzzle Hotel Kawaii 🏨")
+root.geometry("600x500")
+root.config(bg="#fdf6e3")  # background elegan krem
+
+label_judul = tk.Label(root, text="Puzzle Tata Cara Restroom Hotel", 
+                       font=("Comic Sans MS", 20, "bold"), bg="#fdf6e3", fg="#2e8b57")
+label_judul.pack(pady=10)
+
+frame_puzzle = tk.Frame(root, bg="#fdf6e3")
+frame_puzzle.pack()
+
+# Grid tombol 3x3
+tombol_grid = []
+for i in range(3):
+    baris = []
+    for j in range(3):
+        btn = tk.Button(frame_puzzle, text="", font=("Comic Sans MS", 10), width=20, height=5,
+                        command=lambda x=i, y=j: geser(x,y))
+        btn.grid(row=i, column=j, padx=5, pady=5)
+        baris.append(btn)
+    tombol_grid.append(baris)
+
+# Tombol acak
+btn_acak = tk.Button(root, text="Acak Puzzle 🔀", font=("Comic Sans MS", 16),
+                     bg="#2e8b57", fg="white", command=acak_tombol)
+btn_acak.pack(pady=15)
+
+# Label status
+label_status = tk.Label(root, text="", font=("Comic Sans MS", 14), bg="#fdf6e3", fg="#2e8b57")
+label_status.pack(pady=5)
+
+# Inisialisasi puzzle
+acak_tombol()
+
+root.mainloop()
